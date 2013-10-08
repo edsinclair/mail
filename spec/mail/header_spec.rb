@@ -417,7 +417,22 @@ describe Mail::Header do
       header = Mail::Header.new("To: Mikel,\r\n   Lindsaar,     Bob")
       header['To'].value.should eq 'Mikel, Lindsaar, Bob'
     end
-    
+
+    describe "bug fixed by commit: 72befdc4dab3e6e288ce226a7da2aa474cf5be83" do
+      let(:long_subject) { "시금치를  사랑햬 " * 6 }
+
+      it "should remove multiple spaces when the subject is assigned after initialization" do
+        header = Mail::Header.new
+        header["Subject"] = long_subject
+        header["Subject"].value.should eq long_subject.squeeze.strip
+      end
+
+      it "should remove multiple spaces when the subject is passed on initialization" do
+        header = Mail::Header.new("Subject: #{long_subject}")
+        header["Subject"].value.should eq long_subject.squeeze.strip
+      end
+    end
+
     it "should handle a crazy long folded header" do
       header_text =<<HERE
 Received: from [127.0.220.158] (helo=fg-out-1718.google.com)
